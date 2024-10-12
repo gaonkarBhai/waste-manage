@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google'
 import "./globals.css"
 import Header from "../components/ui/Header"
 import Sidebar from "../components/ui/Sidebar"
-import 'leaflet/dist/leaflet.css'
+ import 'leaflet/dist/leaflet.css'
 import { Toaster } from 'react-hot-toast'
 import { getAvailableRewards, getUserByEmail } from '@/utils/db/actions'
 
