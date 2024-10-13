@@ -63,6 +63,7 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
       try {
         await web3auth.initModal();
         setProvider(web3auth.provider);
+        console.log(web3auth.provider)
 
         if (web3auth.connected) {
           setLoggedIn(true);
@@ -133,14 +134,20 @@ export default function Header({ onMenuClick, totalEarnings }: HeaderProps) {
   }, [userInfo]);
 
   const login = async () => {
-    if (!web3auth) {
-      console.log("web3auth not initialized yet");
+   
+
+    if (!web3auth ) {
+      console.log("web3auth not initialized yet or not ready");
       return;
     }
     try {
+      console.log("before")
+      console.log(web3auth)
       const web3authProvider = await web3auth.connect();
+      console.log("after")
       setProvider(web3authProvider);
       setLoggedIn(true);
+      console.log(hererer)
       const user = await web3auth.getUserInfo();
       setUserInfo(user);
       if (user.email) {

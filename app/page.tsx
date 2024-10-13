@@ -1,101 +1,161 @@
-import Image from "next/image";
+// @ts-nocheck
+'use client'
+import { useState, useEffect } from 'react'
+import { ArrowRight, Leaf, Recycle, Users, Coins, MapPin, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Poppins } from 'next/font/google'
+import Link from 'next/link'
+import ContractInteraction from '@/components/ContractInteraction'
+import { getRecentReports, getAllRewards, getWasteCollectionTasks } from '@/utils/db/actions'
+const poppins = Poppins({ 
+  weight: ['300', '400', '600'],
+  subsets: ['latin'],
+  display: 'swap',
+})
+
+function AnimatedGlobe() {
+  return (
+    <div className="relative w-32 h-32 mx-auto mb-8">
+      <div className="absolute inset-0 rounded-full bg-green-500 opacity-20 animate-pulse"></div>
+      <div className="absolute inset-2 rounded-full bg-green-400 opacity-40 animate-ping"></div>
+      <div className="absolute inset-4 rounded-full bg-green-300 opacity-60 animate-spin"></div>
+      <div className="absolute inset-6 rounded-full bg-green-200 opacity-80 animate-bounce"></div>
+      <Leaf className="absolute inset-0 m-auto h-16 w-16 text-green-600 animate-pulse" />
+    </div>
+  )
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [impactData, setImpactData] = useState({
+    wasteCollected: 0,
+    reportsSubmitted: 0,
+    tokensEarned: 0,
+    co2Offset: 0
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  
+
+  useEffect(() => {
+    async function fetchImpactData() {
+      try {
+        const reports = await getRecentReports(100);  // Fetch last 100 reports
+        const rewards = await getAllRewards();
+        const tasks = await getWasteCollectionTasks(100);  // Fetch last 100 tasks
+
+        const wasteCollected = tasks.reduce((total, task) => {
+          const match = task.amount.match(/(\d+(\.\d+)?)/);
+          const amount = match ? parseFloat(match[0]) : 0;
+          return total + amount;
+        }, 0);
+
+        const reportsSubmitted = reports.length;
+        const tokensEarned = rewards.reduce((total, reward) => total + (reward.points || 0), 0);
+        const co2Offset = wasteCollected * 0.5;  // Assuming 0.5 kg CO2 offset per kg of waste
+
+        setImpactData({
+          wasteCollected: Math.round(wasteCollected * 10) / 10, // Round to 1 decimal place
+          reportsSubmitted,
+          tokensEarned,
+          co2Offset: Math.round(co2Offset * 10) / 10 // Round to 1 decimal place
+        });
+      } catch (error) {
+        console.error("Error fetching impact data:", error);
+        // Set default values in case of error
+        setImpactData({
+          wasteCollected: 0,
+          reportsSubmitted: 0,
+          tokensEarned: 0,
+          co2Offset: 0
+        });
+      }
+    }
+
+    fetchImpactData();
+  }, []);
+
+  const login = () => {
+    setLoggedIn(true);
+  };
+
+  return (
+    <div className={`container mx-auto px-4 py-16 ${poppins.className}`}>
+      <section className="text-center mb-20">
+        <AnimatedGlobe />
+        <h1 className="text-6xl font-bold mb-6 text-gray-800 tracking-tight">
+          Zero-to-Hero <span className="text-green-600">Waste Management</span>
+        </h1>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
+          Join our community in making waste management more efficient and rewarding!
+        </p>
+        {!loggedIn ? (
+          <Button onClick={login} className="bg-green-600 hover:bg-green-700 text-white text-lg py-6 px-10 rounded-full font-medium transition-all duration-300 ease-in-out transform hover:scale-105">
+            Get Started
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        ) : (
+          <Link href="/report">
+            <Button className="bg-green-600 hover:bg-green-700 text-white text-lg py-6 px-10 rounded-full font-medium transition-all duration-300 ease-in-out transform hover:scale-105">
+              Report Waste
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+        )}
+      </section>
+      
+      <section className="grid md:grid-cols-3 gap-10 mb-20">
+        <FeatureCard
+          icon={Leaf}
+          title="Eco-Friendly"
+          description="Contribute to a cleaner environment by reporting and collecting waste."
+        />
+        <FeatureCard
+          icon={Coins}
+          title="Earn Rewards"
+          description="Get tokens for your contributions to waste management efforts."
+        />
+        <FeatureCard
+          icon={Users}
+          title="Community-Driven"
+          description="Be part of a growing community committed to sustainable practices."
+        />
+      </section>
+      
+      <section className="bg-white p-10 rounded-3xl shadow-lg mb-20">
+        <h2 className="text-4xl font-bold mb-12 text-center text-gray-800">Our Impact</h2>
+        <div className="grid md:grid-cols-4 gap-6">
+          <ImpactCard title="Waste Collected" value={`${impactData.wasteCollected} kg`} icon={Recycle} />
+          <ImpactCard title="Reports Submitted" value={impactData.reportsSubmitted.toString()} icon={MapPin} />
+          <ImpactCard title="Tokens Earned" value={impactData.tokensEarned.toString()} icon={Coins} />
+          <ImpactCard title="CO2 Offset" value={`${impactData.co2Offset} kg`} icon={Leaf} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+   
     </div>
-  );
+  )
+}
+
+function ImpactCard({ title, value, icon: Icon }: { title: string; value: string | number; icon: React.ElementType }) {
+  const formattedValue = typeof value === 'number' ? value.toLocaleString('en-US', { maximumFractionDigits: 1 }) : value;
+  
+  return (
+    <div className="p-6 rounded-xl bg-gray-50 border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-md">
+      <Icon className="h-10 w-10 text-green-500 mb-4" />
+      <p className="text-3xl font-bold mb-2 text-gray-800">{formattedValue}</p>
+      <p className="text-sm text-gray-600">{title}</p>
+    </div>
+  )
+}
+
+function FeatureCard({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) {
+  return (
+    <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 ease-in-out flex flex-col items-center text-center">
+      <div className="bg-green-100 p-4 rounded-full mb-6">
+        <Icon className="h-8 w-8 text-green-600" />
+      </div>
+      <h3 className="text-xl font-semibold mb-4 text-gray-800">{title}</h3>
+      <p className="text-gray-600 leading-relaxed">{description}</p>
+    </div>
+  )
 }
