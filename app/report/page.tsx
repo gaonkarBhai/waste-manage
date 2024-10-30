@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { MapPin, Upload, CheckCircle, Loader } from 'lucide-react';
@@ -115,7 +116,7 @@ export default function ReportPage() {
         if (parsedResult.wasteType && parsedResult.quantity && parsedResult.confidence) {
           setVerificationResult(parsedResult);
           setVerificationStatus('success');
-          setNewReport({ ...newReport, type: parsedResult.wasteType, amount: parsedResult.quantity });
+          setNewReport({ ...newReport,location:`Latitude: ${locationCoords?.latitude} ,longitude: ${locationCoords?.longitude}, Date:${new Date().toLocaleDateString()}  `, type: parsedResult.wasteType, amount: parsedResult.quantity });
         } else {
           console.error('Invalid verification result:', parsedResult);
           setVerificationStatus('failure');
@@ -317,7 +318,7 @@ export default function ReportPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location And Date</label>
             {isLoaded ? (
               <StandaloneSearchBox onLoad={onLoad} onPlacesChanged={onPlacesChanged}>
                 <input
@@ -418,4 +419,3 @@ export default function ReportPage() {
     </div>
   );
 }
-

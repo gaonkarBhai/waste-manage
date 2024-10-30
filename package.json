@@ -11,6 +11,7 @@
     "db:studio": "npx drizzle-kit studio"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.0.2",
     "@google/generative-ai": "^0.21.0",
     "@neondatabase/serverless": "^0.10.1",
     "@radix-ui/react-dropdown-menu": "^2.1.2",
