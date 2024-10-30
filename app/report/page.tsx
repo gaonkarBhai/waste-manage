@@ -115,7 +115,8 @@ export default function ReportPage() {
         if (parsedResult.wasteType && parsedResult.quantity && parsedResult.confidence) {
           setVerificationResult(parsedResult);
           setVerificationStatus('success');
-          setNewReport({ ...newReport, type: parsedResult.wasteType, amount: parsedResult.quantity });
+          setNewReport({ ...newReport,location:`Latitude: ${locationCoords?.latitude} ,longitude: ${locationCoords?.longitude}, Date:${new Date().toLocaleDateString()}  `, type: parsedResult.wasteType, amount: parsedResult.quantity });
+
         } else {
           console.error('Invalid verification result:', parsedResult);
           setVerificationStatus('failure');
